@@ -22,47 +22,61 @@ namespace oop2561_Line_Notify
         private void button1_Click(object sender, EventArgs e)
         {
             LineNotify ln = new LineNotify();
-            ln.LINENotify(textBox1.Text, textBox2.Text);
+            ln.notifyMessage(textBox1.Text);
         }
     }
 
     public class LineNotify
     {
-        public string Status { get; set; }
-
-        public HttpWebResponse LINENotify(string message, string Linetoken)
+        public void notifyPicture(string url)
         {
-            HttpWebRequest httpwebrequest = WebRequest.Create("https://notify-api.line.me/api/notify") as HttpWebRequest;
-            httpwebrequest.KeepAlive = true;
-            httpwebrequest.ContentType = "application/x-www-form-urlencoded";
-            httpwebrequest.AllowAutoRedirect = true;
-            httpwebrequest.Referer = "https://notify-api.line.me";
-            httpwebrequest.Host = "notify-api.line.me";
-            httpwebrequest.UserAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36";
-            httpwebrequest.Accept = "application/json, text/javascript, */*; q=0.01";
-            httpwebrequest.CookieContainer = new CookieContainer();
-            httpwebrequest.Method = "POST";
+            LINENotify(" ", 0, 0, url);
+        }
 
-            httpwebrequest.Headers["Authorization"] = "Bearer " + Linetoken + "";
+        public void notifySticker(int stickerID, int stickerPackageID)
+        {
+            LINENotify("", stickerPackageID, stickerID, "");
+        }
 
-            string postdata = "message=" + message;
-            bool issupport = httpwebrequest.SupportsCookieContainer;
-            byte[] dataBytes = UTF8Encoding.UTF8.GetBytes(postdata);
-            httpwebrequest.ContentLength = dataBytes.Length;
-            using (Stream postStream3 = httpwebrequest.GetRequestStream())
+        public void notifyMessage(string message)
+        {
+            LINENotify(message, 0, 0, "");
+        }
+
+        public void LINENotify(string message, int stickerPackageID, int stickerID, string pictureUrl)
+        {
+            string token = "eXqaDEzTQo1depPLtaDESimCDiJ9DyEcKqjrQ95Tq6x";
+
+            var request = (HttpWebRequest)WebRequest.Create("https://notify-api.line.me/api/notify");
+
+            var postData = string.Format("message={0}", message);
+            
+            // Sticker
+            if (stickerPackageID > 0 && stickerID > 0)
             {
-                postStream3.Write(dataBytes, 0, dataBytes.Length);
+                var stickerPackageId = string.Format("stickerPackageId={0}", stickerPackageID);
+                var stickerId = string.Format("stickerId={0}", stickerID);
+                postData += "&" + stickerPackageId.ToString() + "&" + stickerId.ToString();
             }
-            HttpWebResponse httpResponse = httpwebrequest.GetResponse() as HttpWebResponse;
-            if (httpResponse.StatusCode == HttpStatusCode.OK)
-            {
 
-            }
-            else
+            // Picture
+            if (pictureUrl != "")
             {
-
+                var imageThumbnail = string.Format("imageThumbnail={0}", pictureUrl);
+                var imageFullsize = string.Format("imageFullsize={0}", pictureUrl);
+                postData += "&" + imageThumbnail.ToString() + "&" + imageFullsize.ToString();
             }
-            return httpResponse;
+
+            var data = Encoding.UTF8.GetBytes(postData);
+
+            request.Method = "POST";
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.ContentLength = data.Length;
+            request.Headers.Add("Authorization", "Bearer " + token);
+
+            using (var stream = request.GetRequestStream()) stream.Write(data, 0, data.Length);
+            var response = (HttpWebResponse)request.GetResponse();
+            var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
         }
     }
 
