@@ -18,6 +18,12 @@ namespace oop2561_Line_Notify
         {
             InitializeComponent();
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            LineNotify ln = new LineNotify();
+            ln.LINENotify(textBox1.Text, textBox2.Text);
+        }
     }
 
     public class LineNotify
