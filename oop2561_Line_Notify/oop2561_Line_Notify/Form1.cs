@@ -22,7 +22,10 @@ namespace oop2561_Line_Notify
         private void button1_Click(object sender, EventArgs e)
         {
             LineNotify ln = new LineNotify();
-            ln.notifyMessage(textBox1.Text, textBox2.Text);
+            // Message
+            // ln.notifyMessage(textBox1.Text);
+            // Sticker
+            ln.notifySticker(41, 2);
         }
     }
 
@@ -30,22 +33,24 @@ namespace oop2561_Line_Notify
     {
         public void notifyPicture(string url)
         {
-            LINENotify("", "", 0, 0, url);
+            LINENotify(" ", 0, 0, url);
         }
 
         public void notifySticker(int stickerID, int stickerPackageID)
         {
-            LINENotify("", "", stickerPackageID, stickerID, "");
+            LINENotify(" ", stickerPackageID, stickerID, "");
         }
 
-        public void notifyMessage(string message, string lineToken)
+        public void notifyMessage(string message)
         {
-            LINENotify(message, lineToken, 0, 0, "");
+            LINENotify(message, 0, 0, "");
         }
 
-        public void LINENotify(string message, string lineToken,int stickerPackageID, int stickerID, string pictureUrl)
+        public void LINENotify(string message ,int stickerPackageID, int stickerID, string pictureUrl)
         {
-           
+            // Token
+            string token = "";
+
             var request = (HttpWebRequest)WebRequest.Create("https://notify-api.line.me/api/notify");
 
             var postData = string.Format("message={0}", message);
@@ -71,7 +76,7 @@ namespace oop2561_Line_Notify
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
             request.ContentLength = data.Length;
-            request.Headers.Add("Authorization", "Bearer " + lineToken);
+            request.Headers.Add("Authorization", "Bearer " + token);
 
             using (var stream = request.GetRequestStream()) stream.Write(data, 0, data.Length);
             var response = (HttpWebResponse)request.GetResponse();
